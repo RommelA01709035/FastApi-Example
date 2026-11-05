@@ -43,7 +43,6 @@ def generate_payment(
         raise NotFoundError(f"Cuenta {bank_account_id} no encontrada")
 
 
-    # Aqui las condcionales a evaluar
     if expense.status == ExpenseStatus.CANCELLED:
         raise BusinessRuleError("No se puede pagar un gasto cancelado")
     if expense.status == ExpenseStatus.PAID:
