@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text, select
+from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
 
@@ -41,10 +41,6 @@ class Expense(Base):
     approved_at: Mapped[datetime | None] = mapped_column("fecha_aprobacion", DateTime(timezone=True))
 
     records: Mapped[list["ExpenseRecord"]] = relationship(back_populates="expense")
-
-    @classmethod
-    def get_by_code(cls, db: Session, reference_code: str) -> "Expense | None":
-        return db.scalar(select(cls).where(cls.reference_code == reference_code))
 
 
 class ExpenseRecord(Base):

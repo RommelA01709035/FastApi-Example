@@ -1,18 +1,16 @@
 import hashlib
 import hmac
 import os
-import secrets
 import time
 
 import bcrypt
 
 BCRYPT_ROUNDS = 12
-BCRYPT_MAX_BYTES = 72  # bcrypt ignores anything past 72 bytes; truncate like pgcrypto does
+BCRYPT_MAX_BYTES = 72 
 
 SESSION_COOKIE = "session"
 SESSION_MAX_AGE = 8 * 60 * 60
-SECRET_KEY = os.getenv("SECRET_KEY") or secrets.token_hex(32)
-
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 def _password_bytes(plain: str) -> bytes:
     return plain.encode()[:BCRYPT_MAX_BYTES]

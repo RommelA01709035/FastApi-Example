@@ -14,10 +14,6 @@ class Role(Base):
 
     users: Mapped[list["User"]] = relationship(back_populates="role")
 
-    @classmethod
-    def get_by_name(cls, db: Session, name: str) -> "Role | None":
-        return db.scalar(select(cls).where(cls.name == name))
-
 
 class Feature(Base):
     __tablename__ = "funcionalidades"

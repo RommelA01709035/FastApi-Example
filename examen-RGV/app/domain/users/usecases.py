@@ -1,5 +1,3 @@
-import os
-
 from sqlalchemy.orm import Session
 
 from app.domain.errors import BusinessRuleError, NotFoundError

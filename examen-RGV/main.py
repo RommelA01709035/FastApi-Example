@@ -2,14 +2,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from fastapi import FastAPI  # noqa: E402
-from fastapi.exceptions import RequestValidationError  # noqa: E402
-from starlette.exceptions import HTTPException as StarletteHTTPException  # noqa: E402
+from fastapi import FastAPI  
+from fastapi.exceptions import RequestValidationError  
+from starlette.exceptions import HTTPException as StarletteHTTPException  
 
-from app.domain.errors import DomainError  # noqa: E402
-from app.infrastructure.middlewares.auth import auth_middleware  # noqa: E402
-from app.presentation.controllers import errors  # noqa: E402
-from app.presentation.routers import accounts, auth, dashboard, expenses, payments, users  # noqa: E402
+from app.domain.errors import DomainError  
+from app.infrastructure.middlewares.auth import auth_middleware  
+from app.presentation.controllers import errors  
+from app.presentation.routers import accounts, auth, dashboard, expenses, payments, users  
 
 app = FastAPI(title="Control de gastos y pagos")
 app.middleware("http")(auth_middleware)
