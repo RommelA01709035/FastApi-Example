@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, Field
+
+EmptyAsNone = BeforeValidator(lambda value: None if value == "" else value)
 
 
 class CancelIn(BaseModel):

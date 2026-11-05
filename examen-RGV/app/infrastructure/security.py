@@ -23,7 +23,7 @@ def hash_password(plain: str) -> str:
 def verify_password(plain: str, password_hash: str) -> bool:
     try:
         return bcrypt.checkpw(_password_bytes(plain), password_hash.encode())
-    except ValueError:  # malformed or non-bcrypt hash
+    except ValueError:
         return False
 
 

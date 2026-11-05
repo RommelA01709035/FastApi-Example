@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
@@ -7,7 +9,7 @@ from app.domain.users.models import User
 from app.infrastructure.database import get_db
 from app.infrastructure.middlewares.auth import get_current_user
 from app.presentation.controllers import payments as controller
-from app.presentation.schemas.common import CancelIn
+from app.presentation.schemas.common import CancelIn, EmptyAsNone
 from app.presentation.schemas.payments import PaymentList, PaymentOut
 
 router = APIRouter(tags=["payments"])
@@ -17,7 +19,7 @@ router = APIRouter(tags=["payments"])
 def list_payments(
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    status: PaymentStatus | None = None,
+    status: Annotated[PaymentStatus | None, EmptyAsNone] = None,
     db: Session = Depends(get_db),
 ):
     return controller.list_payments(db, limit, offset, status)
@@ -61,7 +63,7 @@ def payments_page(
     request: Request,
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    status: PaymentStatus | None = None,
+    status: Annotated[PaymentStatus | None, EmptyAsNone] = None,
     db: Session = Depends(get_db),
 ):
     return controller.payments_page(request, db, limit, offset, status)
