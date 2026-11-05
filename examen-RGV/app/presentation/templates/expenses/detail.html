@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Gasto {{ expense.reference_code }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <ul>
+    <li><a href="/expenses">Gastos</a></li>
+    <li class="is-active"><a>{{ expense.reference_code }}</a></li>
+  </ul>
+</nav>
+
+<div class="columns">
+  <div class="column is-7">
+    <div class="box">
+      <h1 class="title is-4">
+        {{ expense.concept }}
+        <span class="tag {{ status_colors[expense.status.value] }}">{{ status_labels[expense.status.value] }}</span>
+      </h1>
+      <table class="table is-fullwidth">
+        <tr><th>Código</th><td>{{ expense.reference_code }}</td></tr>
+        <tr><th>Descripción</th><td>{{ expense.description or "—" }}</td></tr>
+        <tr><th>Monto total</th><td>{{ expense.total_amount | money }}</td></tr>
+        <tr><th>Saldo pendiente</th><td><strong>{{ expense.pending_balance | money }}</strong></td></tr>
+        <tr><th>Fecha</th><td>{{ expense.expense_date | datetime }}</td></tr>
+        <tr><th>Aprobado</th><td>{{ expense.approved_at | datetime }}</td></tr>
+      </table>
+
+      <div class="buttons">
+        {% if expense.status.value == "PENDING" %}
+          <form method="post" action="/expenses/{{ expense.id }}/approve">
+            <button class="button is-info">Aprobar</button>
+          </form>
+        {% endif %}
+        {% if expense.status.value in ["PENDING", "APPROVED"] and expense.pending_balance == expense.total_amount %}
+          <form method="post" action="/expenses/{{ expense.id }}/cancel" class="is-flex">
+            <input class="input is-small mr-2" name="reason" placeholder="Motivo (opcional)">
+            <button class="button is-danger is-outlined">Cancelar</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    {% if expense.status.value == "APPROVED" %}
+      <div class="box">
+        <h2 class="subtitle">Generar pago</h2>
+        {% if accounts %}
+          <form method="post" action="/expenses/{{ expense.id }}/generate-payment">
+            <div class="field">
+              <label class="label">Cuenta bancaria</label>
+              <div class="select is-fullwidth">
+                <select name="bank_account_id" required>
+                  {% for account in accounts %}
+                    <option value="{{ account.id }}">
+                      {{ account.bank_name }} {{ account.account_number }} — {{ account.balance | money }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="label">Monto</label>
+              <input class="input" name="amount" type="number" step="0.01" min="0.01"
+                     max="{{ expense.pending_balance }}" placeholder="{{ expense.pending_balance }}">
+              <p class="help">Vacío = paga todo el saldo pendiente. Menor = pago parcial.</p>
+            </div>
+            <button class="button is-success is-fullwidth">Generar pago</button>
+          </form>
+        {% else %}
+          <p>Primero <a href="/accounts">crea una cuenta bancaria</a>.</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<h2 class="subtitle">Pagos del gasto</h2>
+<table class="table is-fullwidth is-striped">
+  <thead>
+    <tr><th>Código</th><th class="has-text-right">Monto</th><th>Estado</th><th>Fecha</th></tr>
+  </thead>
+  <tbody>
+    {% for payment in payments %}
+      <tr>
+        <td><a href="/payments/{{ payment.id }}">{{ payment.operation_code }}</a></td>
+        <td class="has-text-right">{{ payment.amount | money }}</td>
+        <td><span class="tag {{ status_colors[payment.status.value] }}">{{ status_labels[payment.status.value] }}</span></td>
+        <td>{{ payment.payment_date | datetime }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="has-text-centered has-text-grey">Sin pagos</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2 class="subtitle">Historial</h2>
+<table class="table is-fullwidth is-narrow">
+  <thead><tr><th>Evento</th><th>Usuario</th><th>Detalle</th><th>Fecha</th></tr></thead>
+  <tbody>
+    {% for record in expense.records %}
+      <tr>
+        <td><span class="tag {{ status_colors[record.event_type.value] }}">{{ status_labels[record.event_type.value] }}</span></td>
+        <td>#{{ record.performed_by }}</td>
+        <td>{{ record.detail or "—" }}</td>
+        <td>{{ record.created_at | datetime }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

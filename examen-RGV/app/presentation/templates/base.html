@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Control de gastos{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% set path = request.url.path %}
+  <nav class="navbar is-dark">
+    <div class="navbar-brand">
+      <a class="navbar-item has-text-weight-bold" href="/">Control de gastos</a>
+    </div>
+    <div class="navbar-menu is-active">
+      <div class="navbar-start">
+        <a class="navbar-item {{ 'is-active' if path == '/' }}" href="/">Dashboard</a>
+        <a class="navbar-item {{ 'is-active' if path.startswith('/expenses') }}" href="/expenses">Gastos</a>
+        <a class="navbar-item {{ 'is-active' if path.startswith('/payments') }}" href="/payments">Pagos</a>
+        <a class="navbar-item {{ 'is-active' if path.startswith('/accounts') }}" href="/accounts">Cuentas</a>
+        <a class="navbar-item {{ 'is-active' if path.startswith('/users') }}" href="/users">Usuarios</a>
+      </div>
+      <div class="navbar-end">
+        <a class="navbar-item" href="/docs" target="_blank">API</a>
+        {% if request.state.user %}
+          <span class="navbar-item">{{ request.state.user.email }}</span>
+          <div class="navbar-item">
+            <form method="post" action="/logout">
+              <button class="button is-small is-light">Cerrar sesión</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <section class="section">
+    <div class="container">
+      {% if request.query_params.get("ok") %}
+        <div class="notification is-success is-light">{{ request.query_params.get("ok") }}</div>
+      {% endif %}
+      {% if request.query_params.get("error") %}
+        <div class="notification is-danger is-light">{{ request.query_params.get("error") }}</div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </section>
+</body>
+</html>

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Pago {{ payment.operation_code }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <ul>
+    <li><a href="/payments">Pagos</a></li>
+    <li class="is-active"><a>{{ payment.operation_code }}</a></li>
+  </ul>
+</nav>
+
+<div class="box">
+  <h1 class="title is-4">
+    Pago {{ payment.operation_code }}
+    <span class="tag {{ status_colors[payment.status.value] }}">{{ status_labels[payment.status.value] }}</span>
+  </h1>
+
+  <div class="columns">
+    <div class="column">
+      <table class="table is-fullwidth">
+        <tr><th>Monto</th><td><strong>{{ payment.amount | money }}</strong></td></tr>
+        <tr><th>Fecha pago</th><td>{{ payment.payment_date | datetime }}</td></tr>
+        <tr><th>Efectuado</th><td>{{ payment.executed_at | datetime }}</td></tr>
+        <tr><th>Creado por</th><td>#{{ payment.created_by }}</td></tr>
+        <tr><th>Aprobado por</th><td>{{ "#" ~ payment.approved_by if payment.approved_by else "—" }}</td></tr>
+      </table>
+    </div>
+    <div class="column">
+      <table class="table is-fullwidth">
+        <tr>
+          <th>Gasto</th>
+          <td><a href="/expenses/{{ expense.id }}">{{ expense.reference_code }}</a> — {{ expense.concept }}</td>
+        </tr>
+        <tr><th>Saldo pendiente del gasto</th><td>{{ expense.pending_balance | money }}</td></tr>
+        <tr><th>Cuenta</th><td>{{ account.bank_name }} {{ account.account_number }}</td></tr>
+        <tr><th>Saldo de la cuenta</th><td>{{ account.balance | money }}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="buttons">
+    {% if payment.status.value == "PENDING" %}
+      <form method="post" action="/payments/{{ payment.id }}/approve">
+        <button class="button is-info">Aprobar</button>
+      </form>
+    {% endif %}
+    {% if payment.status.value == "APPROVED" %}
+      <form method="post" action="/payments/{{ payment.id }}/execute">
+        <button class="button is-success">Efectuar pago</button>
+      </form>
+    {% endif %}
+    {% if payment.status.value in ["PENDING", "APPROVED"] %}
+      <form method="post" action="/payments/{{ payment.id }}/cancel" class="is-flex">
+        <input class="input is-small mr-2" name="reason" placeholder="Motivo (opcional)">
+        <button class="button is-danger is-outlined">Cancelar</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<h2 class="subtitle">Historial</h2>
+<table class="table is-fullwidth is-narrow">
+  <thead><tr><th>Evento</th><th>Usuario</th><th>Detalle</th><th>Fecha</th></tr></thead>
+  <tbody>
+    {% for record in payment.records %}
+      <tr>
+        <td><span class="tag {{ status_colors[record.event_type.value] }}">{{ status_labels[record.event_type.value] }}</span></td>
+        <td>#{{ record.performed_by }}</td>
+        <td>{{ record.detail or "—" }}</td>
+        <td>{{ record.created_at | datetime }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

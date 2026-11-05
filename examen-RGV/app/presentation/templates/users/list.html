@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Usuarios{% endblock %}
+
+{% block content %}
+<h1 class="title">Usuarios</h1>
+<p class="subtitle is-6">{{ page.total }} registros</p>
+
+<table class="table is-fullwidth is-striped is-hoverable">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Nombre</th>
+      <th>Correo</th>
+      <th>Rol</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in page.users %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.first_name }} {{ user.last_name }} {{ user.second_last_name or "" }}</td>
+        <td>{{ user.email }}</td>
+        <td>#{{ user.role_id }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="has-text-centered has-text-grey">Sin registros</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% include "partials/pagination.html" %}
+{% endblock %}

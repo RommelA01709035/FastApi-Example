@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Página no encontrada{% endblock %}
+
+{% block content %}
+<section class="hero is-medium">
+  <div class="hero-body has-text-centered">
+    <p class="title is-1 has-text-grey-light">404</p>
+    <p class="title is-3">Página no encontrada</p>
+    <p class="subtitle is-6 has-text-grey">
+      {{ message or "La dirección " ~ request.url.path ~ " no existe en la aplicación." }}
+    </p>
+    <div class="buttons is-centered mt-5">
+      <a class="button is-primary" href="/">Ir al dashboard</a>
+      <a class="button" href="javascript:history.back()">Regresar</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

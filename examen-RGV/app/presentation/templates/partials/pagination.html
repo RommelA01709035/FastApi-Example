@@ -1,0 +1,9 @@
+{% set prev_offset = page.offset - page.limit %}
+{% set next_offset = page.offset + page.limit %}
+{% set extra = "&status=" ~ status if status else "" %}
+<nav class="pagination is-right">
+  <a class="pagination-previous" href="?limit={{ page.limit }}&offset={{ prev_offset }}{{ extra }}"
+     {% if page.offset <= 0 %}disabled style="pointer-events: none"{% endif %}>Anterior</a>
+  <a class="pagination-next" href="?limit={{ page.limit }}&offset={{ next_offset }}{{ extra }}"
+     {% if next_offset >= page.total %}disabled style="pointer-events: none"{% endif %}>Siguiente</a>
+</nav>

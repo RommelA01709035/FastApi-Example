@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<h1 class="title">Dashboard</h1>
+
+<div class="columns">
+  <div class="column">
+    <div class="box has-text-centered">
+      <p class="heading">Total en gastos</p>
+      <p class="title is-4">{{ summary.total_expenses | money }}</p>
+    </div>
+  </div>
+  <div class="column">
+    <div class="box has-text-centered">
+      <p class="heading">Pagado</p>
+      <p class="title is-4 has-text-success">{{ summary.total_paid | money }}</p>
+    </div>
+  </div>
+  <div class="column">
+    <div class="box has-text-centered">
+      <p class="heading">Por pagar</p>
+      <p class="title is-4 has-text-warning-dark">{{ summary.pending_balance | money }}</p>
+    </div>
+  </div>
+  <div class="column">
+    <div class="box has-text-centered">
+      <p class="heading">Saldo en bancos</p>
+      <p class="title is-4 has-text-info">{{ summary.bank_balance | money }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="columns">
+  <div class="column"><div class="box"><h2 class="subtitle">Gastos por estado</h2><canvas id="expensesChart"></canvas></div></div>
+  <div class="column"><div class="box"><h2 class="subtitle">Pagos por estado</h2><canvas id="paymentsChart"></canvas></div></div>
+</div>
+<div class="columns">
+  <div class="column"><div class="box"><h2 class="subtitle">Saldo por cuenta</h2><canvas id="accountsChart"></canvas></div></div>
+  <div class="column"><div class="box"><h2 class="subtitle">Pagado por mes</h2><canvas id="monthsChart"></canvas></div></div>
+</div>
+
+<div class="columns">
+  <div class="column">
+    <h2 class="subtitle">Últimos gastos</h2>
+    <table class="table is-fullwidth is-narrow">
+      <tbody>
+        {% for item in summary.latest_expenses %}
+          <tr>
+            <td><a href="/expenses/{{ item.id }}">{{ item.reference_code }}</a></td>
+            <td>{{ item.concept }}</td>
+            <td class="has-text-right">{{ item.total_amount | money }}</td>
+            <td><span class="tag {{ status_colors[item.status.value] }}">{{ status_labels[item.status.value] }}</span></td>
+          </tr>
+        {% else %}
+          <tr><td class="has-text-grey">Sin gastos</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="column">
+    <h2 class="subtitle">Últimos pagos</h2>
+    <table class="table is-fullwidth is-narrow">
+      <tbody>
+        {% for item in summary.latest_payments %}
+          <tr>
+            <td><a href="/payments/{{ item.id }}">{{ item.operation_code }}</a></td>
+            <td class="has-text-right">{{ item.amount | money }}</td>
+            <td><span class="tag {{ status_colors[item.status.value] }}">{{ status_labels[item.status.value] }}</span></td>
+          </tr>
+        {% else %}
+          <tr><td class="has-text-grey">Sin pagos</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const charts = {{ charts | tojson }};
+  const labels = {{ status_labels | tojson }};
+  const colors = { PENDING: "#ffe08a", APPROVED: "#3e8ed0", PAID: "#48c78e", EXECUTED: "#48c78e", CANCELLED: "#f14668" };
+
+  function statusChart(id, data) {
+    const keys = Object.keys(data);
+    new Chart(document.getElementById(id), {
+      type: "doughnut",
+      data: {
+        labels: keys.map(k => labels[k]),
+        datasets: [{ data: keys.map(k => data[k]), backgroundColor: keys.map(k => colors[k]) }],
+      },
+    });
+  }
+
+  statusChart("expensesChart", charts.expenses_by_status);
+  statusChart("paymentsChart", charts.payments_by_status);
+
+  new Chart(document.getElementById("accountsChart"), {
+    type: "bar",
+    data: {
+      labels: charts.balance_by_account.labels,
+      datasets: [{ label: "Saldo", data: charts.balance_by_account.data, backgroundColor: "#3e8ed0" }],
+    },
+    options: { plugins: { legend: { display: false } } },
+  });
+
+  new Chart(document.getElementById("monthsChart"), {
+    type: "line",
+    data: {
+      labels: charts.paid_by_month.labels,
+      datasets: [{ label: "Pagado", data: charts.paid_by_month.data, borderColor: "#48c78e", fill: false }],
+    },
+    options: { plugins: { legend: { display: false } } },
+  });
+</script>
+{% endblock %}
